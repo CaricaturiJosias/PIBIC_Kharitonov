@@ -41,4 +41,4 @@ plot(stepT, stepOut*(1/entrada));
 
 type = "MF";
 subtitle = "Ângulo [º]";
-PID_Run(transfer, type, t, K, subtitle);
+PID_Run(transfer, type, t, K, subtitle, 0);

@@ -1,20 +1,22 @@
-function PID_Run(transfer, type, t, MF_K, subtitle)
+function PID_Run(transfer, type, t, MF_K, subtitle, f_0)
 %PID_RUN Run the entire PID execution script
 %   Runs all the functions necessary
 %   transfer - transfer function of the plant
 %   type - "MA" for open loop or "MF" for closed loop
 %   t - time that will be used for the simulation
-%   MF_K (0 if not closed loop) - Value for closed loop oscilation gain
+%   MF_K - (0 if not closed loop) - Value for closed loop oscilation gain
 %   Subtitle - Text to be shown in the Y axis of the graphs (Varies, X is
 %   always seconds)
+%   f_0 - In case the inflexion point in an open loop is not detected
+%   correctly, insert an number that can be used as a reference
     fname = "[PID_Run]";
-    
+    fontSize = 16;
     % Prepare the time
     t_max = t(end);
     
     % Define The non pid parameters
     if (type == "MA")
-        [K, tal, T] = MA(t, transfer, subtitle);
+        [K, tal, T] = MA(t, transfer, subtitle, f_0);
         Tuning_Param = [K, tal, T];
         
     elseif (type == "MF")
@@ -44,13 +46,13 @@ function PID_Run(transfer, type, t, MF_K, subtitle)
     Not_used = strings(1,size_Array);
     Used = strings(1,size_Array);
     figure(2);
-
     for i = 1:size_Array
         Kp = KP(i);
         Td = TD(i);
         Ti = TI(i);
         [stable, res] = PID_Execution(transfer,Kp, Ti, Td, t_max);
         if (stable < 0)
+            t_ref = res.tout;
             Used(i) = Metodos(i);
             plot(res.tout, res.out, 'DisplayName', Used(i));
             hold on; 
@@ -60,29 +62,34 @@ function PID_Run(transfer, type, t, MF_K, subtitle)
             Not_used(i) = Metodos(i);
         end
     end
-    title("Todos os metodos PID que possuem estabilidade");
-    xlabel("Tempo de simulação (s)");
-    ylabel(subtitle);
-    hold off;
-    lgd = legend;
-    lgd.NumColumns = 3;
-
+    hold on;
     % Clear the output
     [Used, Not_used, ISE, IAE, IATE, MSE, RMSE,   ...
      IADU, ITSE, ISTE, ITDE, ST, RT, MD, OS] =    ...
      ...
-     Clear_Output(Used, Not_used, ISE, IAE, IATE, ...
+     Clear_Output(Used, Not_used, KP, TD, TI, ISE, IAE, IATE, ...
      MSE, RMSE, IADU, ITSE, ISTE, ITDE, ST, RT, MD, OS);
+
+    plot(t_ref, ones(1,size(t_ref,1)));
+    xlabel("Tempo de simulação (s)", 'FontSize',fontSize);
+    legendText = [Used "Degrau de entrada"];
+    lgd = legend(legendText);
+    lgd.NumColumns = 3;
+    lgd.FontSize = 12;
+
+    ISE = ISE';
+    IAE = IAE';
+    IATE = IATE';
+    KP = arrayfun(@(a)num2str(round(a, 3)),KP,'uni',0);
+    TD = arrayfun(@(a)num2str(round(a, 3)),TD,'uni',0);
+    TI = arrayfun(@(a)num2str(round(a, 3)),TI,'uni',0);
+    espaco = cell(1, size(Used,2));
+    espaco(:) = {' || '};
+    PID = string(strcat(KP, espaco, TD, espaco, TI))';
     
-    legend(Used);
-
-    figure(3);
-    Table = table(ISE,IAE,IATE,MSE,RMSE,IADU,ITSE,ISTE,ITDE,ST,RT,MD,OS,'RowNames',cellstr(Used));
-    uitable('Data',Table{:,:},'ColumnName',Table.Properties.VariableNames,...
-    'RowName',Table.Properties.RowNames,'Units', 'Normalized', 'Position',[0, 0, 1, 1]);
-
-    fig = uifigure;
-    T = table(Not_used');
-    uitable(fig, 'Data', T, 'ColumnName', "Unstable methods");
+    Method = cellstr(Used)';
+    Table = table(Method, PID, ISE, IAE, IATE, MSE, RMSE, IADU, ...
+                  ITSE, ISTE, ITDE, ST, RT, MD, OS);
+    
     writetable(Table,'PERFORMANCE.xlsx','Sheet',1)
 end

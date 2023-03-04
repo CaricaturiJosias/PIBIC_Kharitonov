@@ -55,6 +55,6 @@ res = sim("actuator.slx");
 
 t = res.tout;
 type = "MA";
-subtitle = "Velocidade angular [rad/seg]";
-
-PID_Run(transfer, type, t, 0, subtitle);
+subtitle = "Velocidade angular (rad/seg)";
+f_0 = 2.5;
+PID_Run(transfer, type, t, 0, subtitle, f_0);

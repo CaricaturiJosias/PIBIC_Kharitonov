@@ -25,4 +25,4 @@ type = "MA";
 subtitle = "Velocidade angular (rad/s)";
 MF_K = 0;
 t = tout;
-PID_Run(transfer, type, t, MF_K, subtitle);
+PID_Run(transfer, type, t, MF_K, subtitle, 0);

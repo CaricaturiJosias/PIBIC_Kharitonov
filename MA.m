@@ -1,5 +1,6 @@
-function [K, tal, T] = MA(t, transfer, subtitle)
+function [K, tal, T] = MA(t, transfer, subtitle, f_0)
 %MA Simulates the step response and analyzes to get the tuning parameters
+    fontSize = 18;
     syms s;
     [NUM, DEN] = tfdata(transfer, 'v');
     DEN = [DEN 0];
@@ -11,7 +12,7 @@ function [K, tal, T] = MA(t, transfer, subtitle)
     d_1_h = matlabFunction(d_1);
     d_2 = diff(d_1);
     d_2_h = matlabFunction(d_2);
-    x_sample = fzero(d_2_h, 0);
+    x_sample = fzero(d_2_h, f_0);
     x_sample = find(x_sample >= t, 1 , 'last');
     if ((x_sample < 0) || isempty(x_sample))
         x_sample = find(x_sample > 0, 1 , 'first');
@@ -64,9 +65,12 @@ function [K, tal, T] = MA(t, transfer, subtitle)
     plot(t, f_t_h(t));
     hold on;
     plot(t, ones(1,size(t,1)));
-    title("Simulação de malha aberta com a reta característica de ZN");
-    xlabel("Tempo de simulação (s)");
-    ylabel(subtitle);
+    xlabel("Tempo de simulação (s)", 'FontSize', fontSize);
+    ylabel(subtitle, 'FontSize', fontSize);
+    lgd = legend("Reta no ponto de inflexão", ...
+           "Resposta do sistema", ...
+           "Degrau de entrada");
+    lgd.FontSize = 16;
 
     % Calculo dos outros parâmetros de estabilidade 
     T = tal_start;

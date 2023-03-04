@@ -1,18 +1,20 @@
 function [T] = MF(t,transfer, K, subtitle)
 %MF Gets the parameter for closed loop and prints the step response
+    fontSize = 18;
     syms s;
     transfer = feedback(transfer*K,1);
     
     figure(1);
     [out ,tout] = step(transfer, t(end));
     plot(tout, out);
-    title("Malha fechada em oscilação");
-    xlabel("Tempo de simulação [s]");
-    ylabel(subtitle);
+    xlabel("Tempo de simulação (s)", 'FontSize', fontSize);
+    ylabel(subtitle, 'FontSize', fontSize);
     hold on;
     plot (tout, ones(size(tout,1),1));
     [NUM, DEN] = tfdata(transfer);
     func = vpa(poly2sym(cell2mat(NUM),s)/poly2sym(cell2mat(DEN),s));
+    lgd = legend("Resposta do sistema", "Degrau de entrada");
+    lgd.FontSize = 16;
     f_t = ilaplace(func);
     f_t_h = matlabFunction(f_t);
 

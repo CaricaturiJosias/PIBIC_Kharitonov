@@ -37,4 +37,4 @@ type = "MF";
 t = res.tout;
 
 subtitle = "Velocidade do eixo (rad/s)";
-PID_Run(transfer, type, t, K, subtitle);
+PID_Run(transfer, type, t, K, subtitle, 0);
